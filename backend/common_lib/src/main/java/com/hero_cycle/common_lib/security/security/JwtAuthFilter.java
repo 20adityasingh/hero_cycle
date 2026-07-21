@@ -7,6 +7,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -30,7 +32,22 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 return;
             }
 
-            JwtUserPrincipal admin = authUtils.verifyAccessToken(authHeaderToken);
+            String token = authHeaderToken.substring(7);
+
+            JwtUserPrincipal admin = authUtils.verifyAccessToken(token);
+
+            if(admin != null && SecurityContextHolder.getContext().getAuthentication() == null){
+                UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
+                        admin, token, admin.getAuthorities()
+                );
+
+                SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+            }
+
+            filterChain.doFilter(request,response);
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 }
