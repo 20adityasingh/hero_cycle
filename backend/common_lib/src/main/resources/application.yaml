@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: common_lib
+
+jwt:
+  secret-key: 6fvx46xtx45tvko834r7xg8xr34xrrx43t
