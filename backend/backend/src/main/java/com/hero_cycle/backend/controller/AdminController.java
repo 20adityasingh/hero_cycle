@@ -56,4 +56,24 @@ public class AdminController {
     public ResponseEntity<List<AssignmentResponse>> getAllAssignment(){
         return ResponseEntity.of(Optional.ofNullable(adminService.getAllAssignment()));
     }
+
+    @PostMapping("/createUser")
+    public ResponseEntity<String> createUser(@RequestBody @Valid CreateUserRequest request){
+        return ResponseEntity.ok(adminService.createUser(request));
+    }
+
+    @PostMapping("/createAssignment")
+    public ResponseEntity<String> createAssignment(@RequestBody @Valid CreateAssignmentRequest request){
+        return ResponseEntity.ok(adminService.createAssignment(request));
+    }
+
+    @GetMapping("/getAllUsers")
+    public ResponseEntity<List<UserResponse>> getAllUsers(){
+        return ResponseEntity.ok(adminService.getAllUsers());
+    }
+
+    @DeleteMapping("/deleteUser")
+    public ResponseEntity<String> deleteUser(@RequestBody DeleteDTO deleteDTO){
+        return ResponseEntity.ok(adminService.deleteUser(deleteDTO));
+    }
 }

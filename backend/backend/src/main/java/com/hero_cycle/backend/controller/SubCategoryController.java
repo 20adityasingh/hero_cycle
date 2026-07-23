@@ -1,8 +1,6 @@
 package com.hero_cycle.backend.controller;
 
-import com.hero_cycle.backend.dto.CategoryDTO;
-import com.hero_cycle.backend.dto.SubCategoryDTO;
-import com.hero_cycle.backend.dto.SubCategoryName;
+import com.hero_cycle.backend.dto.*;
 import com.hero_cycle.backend.service.SubCategoryService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
@@ -34,5 +32,15 @@ public class SubCategoryController {
     @GetMapping("/getAllSubCategoryName")
     public ResponseEntity<List<SubCategoryName>> getAllSubcategoryName(){
         return ResponseEntity.ok(subCategoryService.getAllSubCategoryName());
+    }
+
+    @PostMapping("/updateSubCategory")
+    public ResponseEntity<String> updateSubCategory (@RequestBody @Valid UpdateSubCategoryDetails subCategoryDetails){
+        return ResponseEntity.ok(subCategoryService.updateSubCategoryDetails(subCategoryDetails));
+    }
+
+    @DeleteMapping("/deleteSubCategory")
+    public ResponseEntity<String> deleteSubCategory(@RequestBody DeleteDTO deleteDTO){
+        return ResponseEntity.ok(subCategoryService.deletedSubCategory(deleteDTO));
     }
 }

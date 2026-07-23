@@ -1,10 +1,6 @@
 package com.hero_cycle.backend.controller;
 
-import com.hero_cycle.backend.dto.CategoryDTO;
-import com.hero_cycle.backend.dto.CategoryName;
-import com.hero_cycle.backend.dto.CategoryResponse;
-import com.hero_cycle.backend.dto.UpdateCategory;
-import com.hero_cycle.backend.entity.SubCategory;
+import com.hero_cycle.backend.dto.*;
 import com.hero_cycle.backend.service.CategoryService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
@@ -41,7 +37,12 @@ public class CategoryController {
     }
 
     @PutMapping("/updateCategory")
-    public ResponseEntity<String> updateCategory(@RequestBody @Valid UpdateCategory updateCategory){
-        return ResponseEntity.ok(categoryService.updateCategory(updateCategory));
+    public ResponseEntity<String> updateCategory(@RequestBody @Valid UpdateDTO updateDTO){
+        return ResponseEntity.ok(categoryService.updateCategory(updateDTO));
+    }
+
+    @DeleteMapping("/deleteCategory")
+    public ResponseEntity<String> deleteCategory(@RequestBody DeleteDTO deleteDTO){
+        return ResponseEntity.ok(categoryService.deleteCategory(deleteDTO));
     }
 }

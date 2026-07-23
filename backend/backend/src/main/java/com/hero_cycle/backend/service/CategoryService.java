@@ -1,10 +1,6 @@
 package com.hero_cycle.backend.service;
 
-import com.hero_cycle.backend.dto.CategoryDTO;
-import com.hero_cycle.backend.dto.CategoryName;
-import com.hero_cycle.backend.dto.CategoryResponse;
-import com.hero_cycle.backend.dto.UpdateCategory;
-import jakarta.validation.Valid;
+import com.hero_cycle.backend.dto.*;
 
 import java.util.List;
 
@@ -15,5 +11,7 @@ public interface CategoryService {
 
     String createCategory(CategoryDTO categoryDTO);
 
-    String updateCategory(UpdateCategory updateCategory);
+    String updateCategory(UpdateDTO updateDTO);
+
+    String deleteCategory(DeleteDTO deleteCategory);
 }

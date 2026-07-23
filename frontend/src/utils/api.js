@@ -146,3 +146,105 @@ export async function updateSubCategoryAmount(data) {
   }
   return res.text();
 }
+export async function getAllUsers() {
+  const res = await fetch(`${BASE_URL}/auth/getAllUsers`, {
+    method: 'GET',
+    headers: getAuthHeaders(),
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(err || 'Failed to fetch users');
+  }
+  return res.json();
+}
+
+export async function createUser(data) {
+  const res = await fetch(`${BASE_URL}/auth/createUser`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(err || 'Failed to create user');
+  }
+  return res.text();
+}
+
+export async function createAssignment(data) {
+  const res = await fetch(`${BASE_URL}/auth/createAssignment`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(err || 'Failed to create assignment');
+  }
+  return res.text();
+}
+
+export async function deleteUser(data) {
+  const res = await fetch(`${BASE_URL}/auth/deleteUser`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(err || 'Failed to delete user');
+  }
+  return res.text();
+}
+
+export async function updateCategory(data) {
+  const res = await fetch(`${BASE_URL}/category/updateCategory`, {
+    method: 'PUT',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(err || 'Failed to update category');
+  }
+  return res.text();
+}
+
+export async function deleteCategory(data) {
+  const res = await fetch(`${BASE_URL}/category/deleteCategory`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(err || 'Failed to delete category');
+  }
+  return res.text();
+}
+
+export async function updateSubCategoryDetails(data) {
+  const res = await fetch(`${BASE_URL}/subcategory/updateSubCategory`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(err || 'Failed to update subcategory');
+  }
+  return res.text();
+}
+
+export async function deleteSubCategory(data) {
+  const res = await fetch(`${BASE_URL}/subcategory/deleteSubCategory`, {
+    method: 'DELETE',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(err || 'Failed to delete subcategory');
+  }
+  return res.text();
+}

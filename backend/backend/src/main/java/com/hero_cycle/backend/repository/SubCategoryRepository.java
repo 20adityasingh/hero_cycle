@@ -12,7 +12,11 @@ import java.util.UUID;
 
 @Repository
 public interface SubCategoryRepository extends JpaRepository<SubCategory, UUID> {
-    SubCategory findByName(String s);
+
+    @Query("""
+        select sb from SubCategory sb where sb.name = :subCategoryName and sb.deletedAt is null
+""")
+    SubCategory findByName(@Param("subCategoryName") String s);
 
     @Query("""
         select new com.hero_cycle.backend.dto.SubCategoryDTO(s.name, s.amount, s.categoryId.name) 

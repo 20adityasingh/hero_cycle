@@ -155,12 +155,101 @@ public class AdminServiceImpl implements AdminService {
         List<Assignment> assignments = assignmentRepository.findAllWithRelations();
 
         return assignments.stream()
+                .filter(a -> a.getCategoryId().getDeletedAt() == null && a.getSubCategoryId().getDeletedAt() == null && a.getAdminId().getDeletedAt() == null)
                 .map( assignment -> AssignmentResponse.builder()
                         .adminName(assignment.getAdminId().getName())
                         .categoryName(assignment.getCategoryId().getName())
                         .subCategoryName(assignment.getSubCategoryId().getName())
                         .build())
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    @Transactional
+    public String createUser(CreateUserRequest request) {
+        log.info("Attempting to create user with username: {}", request.username());
+
+        if (adminRepository.findByUsername(request.username()).isPresent()) {
+            log.error("User creation failed: Username '{}' is already taken.", request.username());
+            throw new IllegalArgumentException("Username is already taken.");
+        }
+
+        Admin admin = new Admin();
+        admin.setName(request.name());
+        admin.setPassword(passwordEncoder.encode(request.password()));
+        admin.setUsername(request.username());
+        if (Objects.equals(request.role(), "ADMIN")) {
+            admin.setRole(Role.ADMIN);
+        } else {
+            admin.setRole(Role.SALESPERSON);
+        }
+        adminRepository.save(admin);
+        log.info("User '{}' created with role: {}", admin.getUsername(), admin.getRole());
+        return "User Created Successfully";
+    }
+
+    @Override
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    @Transactional
+    public String createAssignment(CreateAssignmentRequest request) {
+        log.info("Attempting to create assignment for username: {}", request.username());
+
+        Admin admin = adminRepository.findByUsername(request.username())
+                .orElseThrow(() -> {
+                    log.error("Assignment creation failed: User '{}' not found.", request.username());
+                    return new IllegalArgumentException("User not found: " + request.username());
+                });
+
+        Category category = categoryRepository.findByName(request.category());
+        if (category == null) {
+            log.error("Assignment creation failed: Category '{}' not found.", request.category());
+            throw new IllegalArgumentException("Category not found: " + request.category());
+        }
+
+        SubCategory subCategory = subCategoryRepository.findByName(request.subCategory());
+        if (subCategory == null) {
+            log.error("Assignment creation failed: SubCategory '{}' not found.", request.subCategory());
+            throw new IllegalArgumentException("SubCategory not found: " + request.subCategory());
+        }
+
+        Assignment assignment = new Assignment();
+        assignment.setAdminId(admin);
+        assignment.setCategoryId(category);
+        assignment.setSubCategoryId(subCategory);
+        assignmentRepository.save(assignment);
+        log.info("Assignment created: {} -> {} -> {}", admin.getUsername(), category.getName(), subCategory.getName());
+        return "Assignment Created Successfully";
+    }
+
+    @Override
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    public List<UserResponse> getAllUsers() {
+        log.info("Fetching all non-super-admin users.");
+        return adminRepository.findAllNonSuperAdminUsers(Role.SUPER_ADMIN)
+                .stream()
+                .map(admin -> UserResponse.builder()
+                        .name(admin.getName())
+                        .username(admin.getUsername())
+                        .role(admin.getRole().name())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    @Transactional
+    public String deleteUser(DeleteDTO deleteDTO) {
+        log.info("Attempting to soft-delete user with username: {}", deleteDTO.name());
+        Admin admin = adminRepository.findByUsername(deleteDTO.name())
+                .orElseThrow(() -> {
+                    log.error("Delete failed: User '{}' not found.", deleteDTO.name());
+                    return new IllegalArgumentException("User not found: " + deleteDTO.name());
+                });
+        admin.setDeletedAt(java.time.Instant.now());
+        adminRepository.save(admin);
+        log.info("User '{}' soft-deleted successfully.", deleteDTO.name());
+        return "User Deleted Successfully";
     }
 
 

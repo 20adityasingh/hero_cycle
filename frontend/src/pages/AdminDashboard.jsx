@@ -77,7 +77,7 @@ export default function AdminDashboard() {
       setSuccessMessage(`Amount updated for "${updateForm.name}".`);
       fetchData();
     } catch (err) {
-      setUpdateError(err.message || 'Failed to update amount.');
+      setUpdateError(err.message || 'Failed to updateDTO amount.');
     } finally {
       setUpdateLoading(false);
     }
@@ -94,7 +94,7 @@ export default function AdminDashboard() {
       <main className="dashboard-content">
         <div style={{ marginBottom: '1.5rem' }}>
           <h1 className="panel-title">Admin Dashboard</h1>
-          <p className="panel-subtitle">View categories and update subcategory prices</p>
+          <p className="panel-subtitle">View categories and updateDTO subcategory prices</p>
         </div>
 
         {successMessage && (
@@ -155,7 +155,7 @@ export default function AdminDashboard() {
                               <td>₹{sub.amount?.toFixed(2) ?? '0.00'}</td>
                               <td>
                                 <button
-                                  className="btn-update"
+                                  className="btn-updateDTO"
                                   onClick={() => openUpdateModal(sub, cat.name)}
                                 >
                                   Update

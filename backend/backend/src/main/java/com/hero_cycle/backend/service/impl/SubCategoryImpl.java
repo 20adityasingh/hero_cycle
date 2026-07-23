@@ -1,7 +1,9 @@
 package com.hero_cycle.backend.service.impl;
 
+import com.hero_cycle.backend.dto.DeleteDTO;
 import com.hero_cycle.backend.dto.SubCategoryDTO;
 import com.hero_cycle.backend.dto.SubCategoryName;
+import com.hero_cycle.backend.dto.UpdateSubCategoryDetails;
 import com.hero_cycle.backend.entity.Category;
 import com.hero_cycle.backend.entity.PriceHistory;
 import com.hero_cycle.backend.entity.SubCategory;
@@ -17,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,6 +32,7 @@ public class SubCategoryImpl implements SubCategoryService {
     SubCategoryRepository subCategoryRepository;
     PriceHistoryRepository priceHistoryRepository;
     CategoryRepository categoryRepository;
+    com.hero_cycle.backend.repository.AssignmentRepository assignmentRepository;
 
     @Override
     @PreAuthorize("hasRole('SUPER_ADMIN')")
@@ -113,6 +117,7 @@ public class SubCategoryImpl implements SubCategoryService {
         log.info("Fetching all sub category names.");
         List<SubCategory> subCategories = subCategoryRepository.findAll();
         return subCategories.stream()
+                .filter(sb -> sb.getDeletedAt() == null)
                 .map( subCategory -> {
                     return SubCategoryName.builder()
                             .name(subCategory.getName())
@@ -120,6 +125,39 @@ public class SubCategoryImpl implements SubCategoryService {
                             .build();
                 })
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    @Transactional
+    public String updateSubCategoryDetails(UpdateSubCategoryDetails subCategoryDetails) {
+        SubCategory subCategory = subCategoryRepository.findByName(subCategoryDetails.oldName());
+        if(subCategoryDetails.categoryName() == null){
+            log.warn("Category is still the same");
+        }
+        Category category = categoryRepository.findByName(subCategoryDetails.categoryName());
+        subCategory.setName(subCategoryDetails.name());
+        subCategory.setCategoryId(category);
+        subCategory = subCategoryRepository.save(subCategory);
+
+        // Fetch assignments for this subCategory and update their category
+        List<com.hero_cycle.backend.entity.Assignment> assignments = assignmentRepository.findBySubCategoryId(subCategory);
+        for (com.hero_cycle.backend.entity.Assignment assignment : assignments) {
+            assignment.setCategoryId(category);
+        }
+        assignmentRepository.saveAll(assignments);
+
+        return "SubCategory Updated";
+    }
+
+    @Override
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    @Transactional
+    public String deletedSubCategory(DeleteDTO deleteDTO) {
+        SubCategory subCategory = subCategoryRepository.findByName(deleteDTO.name());
+        subCategory.setDeletedAt(Instant.now());
+        subCategoryRepository.save(subCategory);
+        return "SubCategory deleted successfully";
     }
 
 

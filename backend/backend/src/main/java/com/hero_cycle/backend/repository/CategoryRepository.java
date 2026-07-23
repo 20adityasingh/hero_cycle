@@ -10,7 +10,11 @@ import java.util.UUID;
 
 @Repository
 public interface CategoryRepository extends JpaRepository<Category, UUID> {
-    Category findByName(String category);
+
+    @Query("""
+        select c from Category c where c.name = :categoryName and c.deletedAt is null
+""")
+    Category findByName(@Param("categoryName") String category);
 
     @Query("""
             select c from Category c where c.id = :id

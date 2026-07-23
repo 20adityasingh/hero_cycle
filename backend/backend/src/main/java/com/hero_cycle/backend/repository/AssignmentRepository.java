@@ -18,4 +18,6 @@ public interface AssignmentRepository extends JpaRepository<Assignment, UUID> {
         SELECT a FROM Assignment a JOIN FETCH a.adminId JOIN FETCH a.categoryId JOIN FETCH a.subCategoryId WHERE a.adminId.id = :adminId
 """)
     List<Assignment> findByAdminIdWithRelation(@Param("adminId")UUID adminId);
+
+    List<Assignment> findBySubCategoryId(com.hero_cycle.backend.entity.SubCategory subCategoryId);
 }

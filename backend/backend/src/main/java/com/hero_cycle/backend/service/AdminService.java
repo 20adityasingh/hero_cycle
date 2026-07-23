@@ -16,4 +16,12 @@ public interface AdminService {
     String createAdminOrSalesperson(AdminOrSalespersonRequest request);
 
     List<AssignmentResponse> getAllAssignment();
+
+    String createUser(CreateUserRequest request);
+
+    String createAssignment(CreateAssignmentRequest request);
+
+    List<UserResponse> getAllUsers();
+
+    String deleteUser(DeleteDTO deleteDTO);
 }

@@ -3,7 +3,6 @@ package com.hero_cycle.backend.service.impl;
 import com.hero_cycle.backend.dto.*;
 import com.hero_cycle.backend.entity.Assignment;
 import com.hero_cycle.backend.entity.Category;
-import com.hero_cycle.backend.entity.SubCategory;
 import com.hero_cycle.backend.mapper.CategoryMapper;
 import com.hero_cycle.backend.mapper.SubCategoryMapper;
 import com.hero_cycle.backend.repository.AssignmentRepository;
@@ -19,7 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -49,7 +48,7 @@ public class CategoryServiceImpl implements CategoryService {
         log.info("Found {} assignments.", assignments.size());
 
         Map<Category, List<SubCategoryDTO>> categoryMap = assignments.stream()
-                .filter(a -> a.getCategoryId() != null && a.getSubCategoryId() != null)
+                .filter(a -> a.getCategoryId() != null && a.getSubCategoryId() != null && a.getCategoryId().getDeletedAt() == null && a.getSubCategoryId().getDeletedAt() == null)
                 .collect(Collectors.groupingBy(
                         Assignment::getCategoryId,
                         Collectors.mapping(
@@ -70,6 +69,9 @@ public class CategoryServiceImpl implements CategoryService {
     public List<CategoryName> getAllNames() {
         log.info("Fetching all category names.");
         return categoryRepository.findAll().stream()
+                .filter(category ->
+                    category.getDeletedAt() == null
+                )
                 .map(category -> {
                     return CategoryName.builder()
                             .name(category.getName())
@@ -92,8 +94,27 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public String updateCategory(UpdateCategory updateCategory) {
-        return "";
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    @Transactional
+    public String updateCategory(UpdateDTO updateDTO) {
+        log.info("Fetching the category details to update it.");
+        Category category = categoryRepository.findByName(updateDTO.oldName());
+
+        category.setName(updateDTO.name());
+        log.info("Updated the name.");
+        categoryRepository.save(category);
+        log.info("Saved the Category");
+        return "Category has been updated.";
+    }
+
+    @Override
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    @Transactional
+    public String deleteCategory(DeleteDTO deleteCategory) {
+        Category category = categoryRepository.findByName(deleteCategory.name());
+        category.setDeletedAt(Instant.now());
+        categoryRepository.save(category);
+        return "Category deleted Successfully";
     }
 
 
