@@ -7,14 +7,14 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.UUID;
+import java.util.*;
 
 @Component
 public class AuthUtils {
@@ -29,8 +29,9 @@ public class AuthUtils {
     public String getAccessToken(UserDTO user){
         return Jwts.builder()
                 .subject(user.username())
-                .claim("userId", user.adminId().toString())
+                .claim("adminId", user.adminId().toString())
                 .claim("name", user.name())
+                .claim("role", user.role())
                 .signWith(getSecretKey())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + 1000*60*60))
@@ -44,21 +45,26 @@ public class AuthUtils {
                 .parseSignedClaims(token)
                 .getPayload();
 
-        UUID adminId = UUID.fromString(claims.get("userId", String.class));
+        UUID adminId = UUID.fromString(claims.get("adminId", String.class));
         String username = claims.getSubject();
         String name = claims.get("name", String.class);
+        String role = claims.get("role", String.class);
 
-        return new JwtUserPrincipal(adminId, name , username, null,new ArrayList<>());
+        List<GrantedAuthority> authorities = Collections.singletonList(
+                new SimpleGrantedAuthority("ROLE_" + role)
+        );
+
+        return new JwtUserPrincipal(adminId, name , username, null, role, authorities);
     }
 
     public UUID getCurrentUserId(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        if(authentication == null || !(authentication.getPrincipal() instanceof JwtUserPrincipal user)){
+        if(authentication == null || !(authentication.getPrincipal() instanceof JwtUserPrincipal admin)){
             throw new AuthenticationCredentialsNotFoundException("You are not Authenticated");
         }
 
-        return user.adminId();
+        return admin.adminId();
 
     }
 }

@@ -1,3 +1,32 @@
+server:
+  port: 8080
+
 spring:
   application:
     name: api_gateway
+  cloud:
+    gateway:
+      server:
+        webmvc:
+          routes:
+            - id: backend
+              uri: lb://backend
+              predicates:
+                - name: Path
+                  args:
+                    pattern: /backends/**
+              filters:
+                - StripPrefix=1
+
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+
+jwt:
+  secret-key: 6fvx46xtx45tvko834r7xg8xr34xrrx43t
