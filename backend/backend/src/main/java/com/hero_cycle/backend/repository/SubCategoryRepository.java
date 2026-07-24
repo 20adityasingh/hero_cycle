@@ -14,7 +14,7 @@ import java.util.UUID;
 public interface SubCategoryRepository extends JpaRepository<SubCategory, UUID> {
 
     @Query("""
-        select sb from SubCategory sb where sb.name = :subCategoryName and sb.deletedAt is null
+        select sb from SubCategory sb where LOWER(sb.name) = LOWER(:subCategoryName) and sb.deletedAt is null
 """)
     SubCategory findByName(@Param("subCategoryName") String s);
 
@@ -24,4 +24,10 @@ public interface SubCategoryRepository extends JpaRepository<SubCategory, UUID> 
         where s.categoryId.id = :id
 """)
     List<SubCategoryDTO> findByCategoryId(@Param("id") UUID id);
+
+    @Query("""
+        select s from SubCategory s 
+        where s.categoryId.id = :id and s.deletedAt is null
+""")
+    List<SubCategory> findEntitiesByCategoryId(@Param("id") UUID id);
 }

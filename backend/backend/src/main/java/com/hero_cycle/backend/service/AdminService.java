@@ -1,7 +1,6 @@
 package com.hero_cycle.backend.service;
 
 import com.hero_cycle.backend.dto.*;
-import org.springframework.http.ProblemDetail;
 
 import java.util.List;
 
@@ -13,7 +12,7 @@ public interface AdminService {
 
     CheckSuperAdmin checkSuperAdmin();
 
-    String createAdminOrSalesperson(AdminOrSalespersonRequest request);
+
 
     List<AssignmentResponse> getAllAssignment();
 
@@ -24,4 +23,8 @@ public interface AdminService {
     List<UserResponse> getAllUsers();
 
     String deleteUser(DeleteDTO deleteDTO);
+
+    String updateUserRole(UpdateRoleRequest request);
+
+    String updateAssignment(UpdateAssignmentRequest request);
 }

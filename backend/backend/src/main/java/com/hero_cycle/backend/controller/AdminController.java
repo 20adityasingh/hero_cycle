@@ -47,10 +47,6 @@ public class AdminController {
         return ResponseEntity.ok("Super Admin Does Not Exist");
     }
 
-    @PostMapping("/createAdminOrSalesperson")
-    public ResponseEntity<String> createAdminOrSalesperson( @RequestBody @Valid AdminOrSalespersonRequest request){
-        return ResponseEntity.ok(adminService.createAdminOrSalesperson(request));
-    }
 
     @GetMapping("/getAllAssignment")
     public ResponseEntity<List<AssignmentResponse>> getAllAssignment(){
@@ -75,5 +71,15 @@ public class AdminController {
     @DeleteMapping("/deleteUser")
     public ResponseEntity<String> deleteUser(@RequestBody DeleteDTO deleteDTO){
         return ResponseEntity.ok(adminService.deleteUser(deleteDTO));
+    }
+
+    @PutMapping("/updateUserRole")
+    public ResponseEntity<String> updateUserRole(@RequestBody @Valid UpdateRoleRequest request) {
+        return ResponseEntity.ok(adminService.updateUserRole(request));
+    }
+
+    @PutMapping("/updateAssignment")
+    public ResponseEntity<String> updateAssignment(@RequestBody @Valid UpdateAssignmentRequest request) {
+        return ResponseEntity.ok(adminService.updateAssignment(request));
     }
 }

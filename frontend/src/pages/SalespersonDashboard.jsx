@@ -17,8 +17,15 @@ export default function SalespersonDashboard() {
     setLoading(true);
     setError('');
     try {
-      const data = await getAllCategory();
-      setCategoryData(data || []);
+      let data = await getAllCategory();
+      data = data || [];
+      data.sort((a, b) => a.categoryDTO.name.localeCompare(b.categoryDTO.name));
+      data.forEach(cat => {
+        if (cat.subCategoryDTOS) {
+          cat.subCategoryDTOS.sort((a, b) => a.name.localeCompare(b.name));
+        }
+      });
+      setCategoryData(data);
     } catch (err) {
       setError(err.message || 'Failed to load data.');
     } finally {

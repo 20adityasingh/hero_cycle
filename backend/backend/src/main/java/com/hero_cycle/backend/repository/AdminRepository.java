@@ -19,6 +19,11 @@ public interface AdminRepository extends JpaRepository<Admin, UUID> {
 """)
     Optional<Admin> findByUsername(@Param("username") String username);
 
+    @Query("""
+        select a from Admin a where LOWER(a.name) = LOWER(:name) and a.deletedAt is null
+""")
+    Optional<Admin> findByName(@Param("name") String name);
+
     Admin findByRole(Role role);
 
     @Query("""

@@ -12,7 +12,7 @@ import java.util.UUID;
 public interface CategoryRepository extends JpaRepository<Category, UUID> {
 
     @Query("""
-        select c from Category c where c.name = :categoryName and c.deletedAt is null
+        select c from Category c where LOWER(c.name) = LOWER(:categoryName) and c.deletedAt is null
 """)
     Category findByName(@Param("categoryName") String category);
 

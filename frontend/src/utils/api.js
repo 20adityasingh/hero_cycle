@@ -59,18 +59,7 @@ export async function getAllAssignment() {
   return res.json();
 }
 
-export async function createAdminOrSalesperson(data) {
-  const res = await fetch(`${BASE_URL}/auth/createAdminOrSalesperson`, {
-    method: 'POST',
-    headers: getAuthHeaders(),
-    body: JSON.stringify(data),
-  });
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(err || 'Failed to create user');
-  }
-  return res.text(); // returns plain string response
-}
+
 
 export async function getAllCategoryNames() {
   const res = await fetch(`${BASE_URL}/category/getAllCategoryName`, {
@@ -245,6 +234,32 @@ export async function deleteSubCategory(data) {
   if (!res.ok) {
     const err = await res.text();
     throw new Error(err || 'Failed to delete subcategory');
+  }
+  return res.text();
+}
+
+export async function updateUserRole(data) {
+  const res = await fetch(`${BASE_URL}/auth/updateUserRole`, {
+    method: 'PUT',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(err || 'Failed to update user role');
+  }
+  return res.text();
+}
+
+export async function updateAssignment(data) {
+  const res = await fetch(`${BASE_URL}/auth/updateAssignment`, {
+    method: 'PUT',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(err || 'Failed to update assignment');
   }
   return res.text();
 }

@@ -3,6 +3,7 @@ package com.hero_cycle.backend.service.impl;
 import com.hero_cycle.backend.dto.*;
 import com.hero_cycle.backend.entity.Assignment;
 import com.hero_cycle.backend.entity.Category;
+import com.hero_cycle.backend.entity.SubCategory;
 import com.hero_cycle.backend.mapper.CategoryMapper;
 import com.hero_cycle.backend.mapper.SubCategoryMapper;
 import com.hero_cycle.backend.repository.AssignmentRepository;
@@ -85,6 +86,12 @@ public class CategoryServiceImpl implements CategoryService {
     @Transactional
     public String createCategory(CategoryDTO categoryDTO) {
         log.info("Attempting to create category with name: {}", categoryDTO.name());
+        
+        if (categoryRepository.findByName(categoryDTO.name()) != null) {
+            log.error("Category creation failed: Category '{}' already exists.", categoryDTO.name());
+            throw new IllegalArgumentException("Category already exists with name: " + categoryDTO.name());
+        }
+        
         Category category = new Category();
         category.setName(categoryDTO.name());
         category.setTotalAmount(0.0F);
@@ -112,8 +119,16 @@ public class CategoryServiceImpl implements CategoryService {
     @Transactional
     public String deleteCategory(DeleteDTO deleteCategory) {
         Category category = categoryRepository.findByName(deleteCategory.name());
-        category.setDeletedAt(Instant.now());
-        categoryRepository.save(category);
+        if (category != null) {
+            category.setDeletedAt(Instant.now());
+            categoryRepository.save(category);
+            
+            List<SubCategory> subCategories = subCategoryRepository.findEntitiesByCategoryId(category.getId());
+            for (SubCategory subCategory : subCategories) {
+                subCategory.setDeletedAt(Instant.now());
+            }
+            subCategoryRepository.saveAll(subCategories);
+        }
         return "Category deleted Successfully";
     }
 

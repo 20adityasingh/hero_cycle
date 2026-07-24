@@ -43,7 +43,7 @@ export default function Login() {
 
   function validate() {
     const e = {};
-    if (!form.username.trim()) e.username = 'Username is required.';
+    if (!form.username.trim()) e.username = 'Email Id is required.';
     if (!form.password) e.password = 'Password is required.';
     return e;
   }
@@ -77,7 +77,7 @@ export default function Login() {
       }
     } catch (err) {
       removeToken();
-      setServerError(err.message || 'Invalid username or password.');
+      setServerError(err.message || 'Invalid email id or password.');
     } finally {
       setLoading(false);
     }
@@ -134,19 +134,22 @@ export default function Login() {
         )}
 
         <form onSubmit={handleSubmit} className="auth-form" noValidate>
-          {/* Username */}
+          {/* Email Id */}
           <div className={`form-group ${errors.username ? 'has-error' : ''}`}>
-            <label htmlFor="login-username">Username</label>
+            <label htmlFor="login-username">Email Id</label>
             <div className="input-wrapper">
-              <svg className="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
-              </svg>
-              <input
+              <div className="input-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+              </div>
+              <input 
+                type="text" 
                 id="login-username"
                 name="username"
-                type="text"
-                placeholder="Enter your username"
+                className="input-field with-icon"
+                placeholder="Enter your email id"
                 value={form.username}
                 onChange={handleChange}
                 autoComplete="username"

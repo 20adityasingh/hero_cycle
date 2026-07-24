@@ -2,10 +2,15 @@ package com.hero_cycle.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hero_cycle.backend.dto.*;
+import com.hero_cycle.backend.security.AdminSecurityConfig;
 import com.hero_cycle.backend.service.AdminService;
+import com.hero_cycle.common_lib.security.security.JwtAuthFilter;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration;
+import org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -15,20 +20,21 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.context.annotation.FilterType.ASSIGNABLE_TYPE;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(
     controllers = AdminController.class,
     excludeAutoConfiguration = {
-        org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration.class,
-        org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration.class
+        SecurityAutoConfiguration.class,
+        UserDetailsServiceAutoConfiguration.class
     },
-    excludeFilters = @org.springframework.context.annotation.ComponentScan.Filter(
-        type = org.springframework.context.annotation.FilterType.ASSIGNABLE_TYPE,
+    excludeFilters = @ComponentScan.Filter(
+        type = ASSIGNABLE_TYPE,
         classes = {
-            com.hero_cycle.backend.security.AdminSecurityConfig.class,
-            com.hero_cycle.common_lib.security.security.JwtAuthFilter.class
+            AdminSecurityConfig.class,
+            JwtAuthFilter.class
         }
     )
 )

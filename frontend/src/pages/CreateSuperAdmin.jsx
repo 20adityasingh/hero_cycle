@@ -24,9 +24,9 @@ export default function CreateSuperAdmin() {
 
   function validate() {
     const e = {};
-    if (!form.name.trim()) e.name = 'Full name is required.';
-    if (!form.username.trim()) e.username = 'Username is required.';
-    else if (form.username.length < 3) e.username = 'Username must be at least 3 characters.';
+    if (!form.name.trim()) e.name = 'Name is required.';
+    if (!form.username.trim()) e.username = 'Email Id is required.';
+    else if (form.username.length < 3) e.username = 'Email Id must be at least 3 characters.';
     if (!form.password) e.password = 'Password is required.';
     else if (form.password.length < 6) e.password = 'Password must be at least 6 characters.';
     if (form.confirmPassword !== form.password) e.confirmPassword = 'Passwords do not match.';
@@ -118,19 +118,22 @@ export default function CreateSuperAdmin() {
             {errors.name && <span className="field-error">{errors.name}</span>}
           </div>
 
-          {/* Username */}
+          {/* Email Id */}
           <div className={`form-group ${errors.username ? 'has-error' : ''}`}>
-            <label htmlFor="setup-username">Username</label>
+            <label htmlFor="setup-username">Email Id</label>
             <div className="input-wrapper">
-              <svg className="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
-              </svg>
-              <input
+              <div className="input-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                  <polyline points="22,6 12,13 2,6"></polyline>
+                </svg>
+              </div>
+              <input 
+                type="text" 
                 id="setup-username"
                 name="username"
-                type="text"
-                placeholder="Choose a username"
+                className="input-field with-icon"
+                placeholder="Enter your email id"
                 value={form.username}
                 onChange={handleChange}
                 autoComplete="username"

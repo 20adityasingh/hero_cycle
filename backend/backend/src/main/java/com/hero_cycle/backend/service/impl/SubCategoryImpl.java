@@ -4,9 +4,11 @@ import com.hero_cycle.backend.dto.DeleteDTO;
 import com.hero_cycle.backend.dto.SubCategoryDTO;
 import com.hero_cycle.backend.dto.SubCategoryName;
 import com.hero_cycle.backend.dto.UpdateSubCategoryDetails;
+import com.hero_cycle.backend.entity.Assignment;
 import com.hero_cycle.backend.entity.Category;
 import com.hero_cycle.backend.entity.PriceHistory;
 import com.hero_cycle.backend.entity.SubCategory;
+import com.hero_cycle.backend.repository.AssignmentRepository;
 import com.hero_cycle.backend.repository.CategoryRepository;
 import com.hero_cycle.backend.repository.PriceHistoryRepository;
 import com.hero_cycle.backend.repository.SubCategoryRepository;
@@ -32,13 +34,18 @@ public class SubCategoryImpl implements SubCategoryService {
     SubCategoryRepository subCategoryRepository;
     PriceHistoryRepository priceHistoryRepository;
     CategoryRepository categoryRepository;
-    com.hero_cycle.backend.repository.AssignmentRepository assignmentRepository;
+    AssignmentRepository assignmentRepository;
 
     @Override
     @PreAuthorize("hasRole('SUPER_ADMIN')")
     @Transactional
     public String createSubCategory(SubCategoryDTO subCategoryDTO) {
         log.info("Attempting to create subcategory '{}' under category '{}'.", subCategoryDTO.name(), subCategoryDTO.categoryName());
+
+        if (subCategoryRepository.findByName(subCategoryDTO.name()) != null) {
+            log.error("SubCategory creation failed: SubCategory '{}' already exists.", subCategoryDTO.name());
+            throw new IllegalArgumentException("SubCategory already exists with name: " + subCategoryDTO.name());
+        }
 
         Category category = categoryRepository.findByName(subCategoryDTO.categoryName());
         if (category == null) {
@@ -60,7 +67,6 @@ public class SubCategoryImpl implements SubCategoryService {
         priceHistoryRepository.save(priceHistory);
         log.info("Price history recorded for subcategory '{}' with amount: {}.", subCategory.getName(), subCategory.getAmount());
 
-        // Update Category Total Amount
         float newTotal = (category.getTotalAmount() != null ? category.getTotalAmount() : 0.0f) + subCategoryDTO.amount();
         category.setTotalAmount(newTotal);
         categoryRepository.save(category);
@@ -140,9 +146,8 @@ public class SubCategoryImpl implements SubCategoryService {
         subCategory.setCategoryId(category);
         subCategory = subCategoryRepository.save(subCategory);
 
-        // Fetch assignments for this subCategory and update their category
-        List<com.hero_cycle.backend.entity.Assignment> assignments = assignmentRepository.findBySubCategoryId(subCategory);
-        for (com.hero_cycle.backend.entity.Assignment assignment : assignments) {
+        List<Assignment> assignments = assignmentRepository.findBySubCategoryId(subCategory);
+        for (Assignment assignment : assignments) {
             assignment.setCategoryId(category);
         }
         assignmentRepository.saveAll(assignments);
@@ -155,8 +160,17 @@ public class SubCategoryImpl implements SubCategoryService {
     @Transactional
     public String deletedSubCategory(DeleteDTO deleteDTO) {
         SubCategory subCategory = subCategoryRepository.findByName(deleteDTO.name());
-        subCategory.setDeletedAt(Instant.now());
-        subCategoryRepository.save(subCategory);
+        if (subCategory != null) {
+            subCategory.setDeletedAt(Instant.now());
+            subCategoryRepository.save(subCategory);
+            
+            Category category = subCategory.getCategoryId();
+            if (category != null && category.getTotalAmount() != null && subCategory.getAmount() != null) {
+                float newTotal = category.getTotalAmount() - subCategory.getAmount();
+                category.setTotalAmount(Math.max(0.0f, newTotal));
+                categoryRepository.save(category);
+            }
+        }
         return "SubCategory deleted successfully";
     }
 

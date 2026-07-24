@@ -14,7 +14,9 @@ import {
   updateCategory,
   deleteCategory,
   updateSubCategoryDetails,
-  deleteSubCategory
+  deleteSubCategory,
+  updateUserRole,
+  updateAssignment
 } from '../utils/api';
 
 export default function Dashboard() {
@@ -88,6 +90,19 @@ export default function Dashboard() {
   const [deleteSubCategoryLoading, setDeleteSubCategoryLoading] = useState(false);
   const [deleteSubCategoryServerError, setDeleteSubCategoryServerError] = useState('');
 
+  // ─── Edit User Role Modal ───
+  const [showEditRoleModal, setShowEditRoleModal] = useState(false);
+  const [editRoleForm, setEditRoleForm] = useState({ username: '', role: '' });
+  const [editRoleLoading, setEditRoleLoading] = useState(false);
+  const [editRoleServerError, setEditRoleServerError] = useState('');
+
+  // ─── Edit Assignment Modal ───
+  const [showEditAssignmentModal, setShowEditAssignmentModal] = useState(false);
+  const [editAssignmentForm, setEditAssignmentForm] = useState({ assignmentId: '', username: '', category: '', subCategory: '' });
+  const [editAssignmentErrors, setEditAssignmentErrors] = useState({});
+  const [editAssignmentLoading, setEditAssignmentLoading] = useState(false);
+  const [editAssignmentServerError, setEditAssignmentServerError] = useState('');
+
   useEffect(() => { fetchDashboardData(); }, []);
 
   async function fetchDashboardData() {
@@ -138,7 +153,7 @@ export default function Dashboard() {
   function validateUser() {
     const e = {};
     if (!userForm.name.trim()) e.name = 'Name is required.';
-    if (!userForm.username.trim()) e.username = 'Username is required.';
+    if (!userForm.username.trim()) e.username = 'Email Id is required.';
     if (!userForm.password) e.password = 'Password is required.';
     if (!userForm.role) e.role = 'Role is required.';
     return e;
@@ -371,6 +386,72 @@ export default function Dashboard() {
     } finally { setDeleteSubCategoryLoading(false); }
   }
 
+  // ─── Edit User Role ───
+  function openEditUserRole(user) {
+    setEditRoleForm({ username: user.username, role: user.role });
+    setEditRoleServerError('');
+    setShowEditRoleModal(true);
+  }
+
+  async function handleEditRoleSubmit(e) {
+    e.preventDefault();
+    setEditRoleLoading(true);
+    try {
+      await updateUserRole({ username: editRoleForm.username, newRole: editRoleForm.role });
+      setShowEditRoleModal(false);
+      fetchDashboardData();
+    } catch (err) {
+      setEditRoleServerError(err.message || 'Failed to update user role.');
+    } finally { setEditRoleLoading(false); }
+  }
+
+  // ─── Edit Assignment ───
+  function openEditAssignment(item) {
+    const availableSubs = subCategories.filter((s) => s.categoryName === item.categoryName);
+    setEditAssignmentForm({
+      assignmentId: item.id,
+      username: item.adminName,
+      category: item.categoryName,
+      subCategory: item.subCategoryName
+    });
+    setEditAssignmentErrors({});
+    setEditAssignmentServerError('');
+    setShowEditAssignmentModal(true);
+  }
+
+  function handleEditAssignmentChange(e) {
+    const { name, value } = e.target;
+    setEditAssignmentErrors((prev) => ({ ...prev, [name]: '' }));
+    setEditAssignmentServerError('');
+    if (name === 'category') {
+      const availableSubs = subCategories.filter((s) => s.categoryName === value);
+      setEditAssignmentForm((prev) => ({ ...prev, category: value, subCategory: availableSubs[0]?.name || '' }));
+    } else {
+      setEditAssignmentForm((prev) => ({ ...prev, [name]: value }));
+    }
+  }
+
+  async function handleEditAssignmentSubmit(e) {
+    e.preventDefault();
+    const eMsg = {};
+    if (!editAssignmentForm.category) eMsg.category = 'Category is required.';
+    if (!editAssignmentForm.subCategory) eMsg.subCategory = 'Subcategory is required.';
+    if (Object.keys(eMsg).length > 0) { setEditAssignmentErrors(eMsg); return; }
+    
+    setEditAssignmentLoading(true);
+    try {
+      await updateAssignment({
+        assignmentId: editAssignmentForm.assignmentId,
+        newCategory: editAssignmentForm.category,
+        newSubCategory: editAssignmentForm.subCategory
+      });
+      setShowEditAssignmentModal(false);
+      fetchDashboardData();
+    } catch (err) {
+      setEditAssignmentServerError(err.message || 'Failed to update assignment.');
+    } finally { setEditAssignmentLoading(false); }
+  }
+
   return (
     <div className="dashboard-container">
       <header className="dashboard-header">
@@ -431,7 +512,10 @@ export default function Dashboard() {
                           <td>{user.username}</td>
                           <td>{user.role}</td>
                           <td>
-                            <button className="btn-delete" onClick={() => openDeleteUser(user.username)}>Delete</button>
+                            <div style={{ display: 'flex', gap: '0.35rem' }}>
+                              <button className="btn-edit" onClick={() => openEditUserRole(user)}>Edit Role</button>
+                              <button className="btn-delete" onClick={() => openDeleteUser(user.username)}>Delete</button>
+                            </div>
                           </td>
                         </tr>
                       ))
@@ -453,6 +537,7 @@ export default function Dashboard() {
                       <th>Name</th>
                       <th>Category</th>
                       <th>Sub Category</th>
+                      <th style={{ width: '100px' }}>Action</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -468,6 +553,9 @@ export default function Dashboard() {
                           <td style={{ fontWeight: 'bold' }}>{item.adminName}</td>
                           <td>{item.categoryName}</td>
                           <td>{item.subCategoryName}</td>
+                          <td>
+                            <button className="btn-edit" onClick={() => openEditAssignment(item)}>Reassign</button>
+                          </td>
                         </tr>
                       ))
                     )}
@@ -566,9 +654,9 @@ export default function Dashboard() {
                 {userErrors.name && <span className="field-error">{userErrors.name}</span>}
               </div>
               <div className={`form-group ${userErrors.username ? 'has-error' : ''}`}>
-                <label>Username</label>
+                <label>Email Id</label>
                 <div className="input-wrapper">
-                  <input name="username" type="text" placeholder="Enter username" value={userForm.username} onChange={handleUserChange} />
+                  <input name="username" type="text" placeholder="Enter email id" value={userForm.username} onChange={handleUserChange} />
                 </div>
                 {userErrors.username && <span className="field-error">{userErrors.username}</span>}
               </div>
@@ -854,6 +942,81 @@ export default function Dashboard() {
               <button className="btn-secondary" onClick={() => setShowDeleteSubCategoryModal(false)} disabled={deleteSubCategoryLoading}>Cancel</button>
               <button className="btn-danger" onClick={handleDeleteSubCategory} disabled={deleteSubCategoryLoading}>{deleteSubCategoryLoading ? 'Deleting...' : 'Delete'}</button>
             </div>
+          </div>
+        </div>
+      )}
+      {/* ─── Edit User Role Modal ─── */}
+      {showEditRoleModal && (
+        <div className="modal-backdrop">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h2 className="modal-title">Edit User Role</h2>
+              <button className="btn-close" onClick={() => setShowEditRoleModal(false)}>×</button>
+            </div>
+            {editRoleServerError && <div className="alert-error">{editRoleServerError}</div>}
+            <form onSubmit={handleEditRoleSubmit} className="auth-form" noValidate>
+              <div className="form-group">
+                <label>User: {editRoleForm.username}</label>
+                <div className="input-wrapper">
+                  <select name="role" value={editRoleForm.role} onChange={(e) => setEditRoleForm({ ...editRoleForm, role: e.target.value })} className="select-input">
+                    <option value="ADMIN">ADMIN</option>
+                    <option value="SALESPERSON">SALESPERSON</option>
+                  </select>
+                </div>
+              </div>
+              <div className="modal-actions">
+                <button type="button" className="btn-secondary" onClick={() => setShowEditRoleModal(false)} disabled={editRoleLoading}>Cancel</button>
+                <button type="submit" className="btn-primary" disabled={editRoleLoading}>{editRoleLoading ? 'Saving...' : 'Save Role'}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ─── Edit Assignment Modal ─── */}
+      {showEditAssignmentModal && (
+        <div className="modal-backdrop">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h2 className="modal-title">Reassign User</h2>
+              <button className="btn-close" onClick={() => setShowEditAssignmentModal(false)}>×</button>
+            </div>
+            {editAssignmentServerError && <div className="alert-error">{editAssignmentServerError}</div>}
+            <form onSubmit={handleEditAssignmentSubmit} className="auth-form" noValidate>
+              <p style={{ fontSize: '0.9rem', marginBottom: '1rem' }}>Reassigning <strong>{editAssignmentForm.username}</strong></p>
+              <div className={`form-group ${editAssignmentErrors.category ? 'has-error' : ''}`}>
+                <label>Category</label>
+                <div className="input-wrapper">
+                  {categories.length === 0 ? (
+                    <span style={{ fontSize: '0.875rem', color: '#dc2626' }}>No categories exist!</span>
+                  ) : (
+                    <select name="category" value={editAssignmentForm.category} onChange={handleEditAssignmentChange} className="select-input">
+                      {categories.map((cat, idx) => <option key={idx} value={cat.name}>{cat.name}</option>)}
+                    </select>
+                  )}
+                </div>
+                {editAssignmentErrors.category && <span className="field-error">{editAssignmentErrors.category}</span>}
+              </div>
+              <div className={`form-group ${editAssignmentErrors.subCategory ? 'has-error' : ''}`}>
+                <label>Sub Category</label>
+                <div className="input-wrapper">
+                  {subCategories.filter((s) => s.categoryName === editAssignmentForm.category).length === 0 ? (
+                    <span style={{ fontSize: '0.875rem', color: '#dc2626' }}>No subcategories for this category!</span>
+                  ) : (
+                    <select name="subCategory" value={editAssignmentForm.subCategory} onChange={handleEditAssignmentChange} className="select-input">
+                      {subCategories.filter((s) => s.categoryName === editAssignmentForm.category).map((sub, idx) => (
+                        <option key={idx} value={sub.name}>{sub.name}</option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+                {editAssignmentErrors.subCategory && <span className="field-error">{editAssignmentErrors.subCategory}</span>}
+              </div>
+              <div className="modal-actions">
+                <button type="button" className="btn-secondary" onClick={() => setShowEditAssignmentModal(false)} disabled={editAssignmentLoading}>Cancel</button>
+                <button type="submit" className="btn-primary" disabled={editAssignmentLoading}>{editAssignmentLoading ? 'Saving...' : 'Reassign'}</button>
+              </div>
+            </form>
           </div>
         </div>
       )}
